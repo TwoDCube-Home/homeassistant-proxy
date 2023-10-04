@@ -1,0 +1,53 @@
+name: Continuous Deployment to Openshift
+on:
+  push:
+    branches:
+      - master
+
+env:
+  IMAGE_NAME: homeassistant-proxy
+  IMAGE_TAGS: latest
+
+jobs:
+  CD:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install CLI tools from OpenShift Mirror
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          oc: '4.13'
+
+      - name: Authenticate and set context
+        uses: redhat-actions/oc-login@v1
+        with:
+          openshift_server_url: ${{ secrets.OKD4_HOST }}
+          openshift_token: ${{ secrets.OKD4_TOKEN }}
+          certificate_authority_data: ${{ secrets.OKD4_CA }}
+          namespace: 'homeassistant'
+
+      - name: Buildah Build
+        id: build
+        uses: redhat-actions/buildah-build@v2
+        with:
+          image: ${{ env.IMAGE_NAME }}
+          tags: ${{ env.IMAGE_TAGS }}
+          containerfiles: |
+            ./Containerfile
+          oci: true
+
+      - name: Push To GHCR
+        uses: redhat-actions/push-to-registry@v2
+        with:
+          image: ${{ steps.build.outputs.image }}
+          tags: ${{ steps.build.outputs.tags }}
+          registry: docker://ghcr.io/twodcube-home
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Restart deployment
+        shell: bash
+        run: |
+          oc rollout restart deployment homeassistant-proxy

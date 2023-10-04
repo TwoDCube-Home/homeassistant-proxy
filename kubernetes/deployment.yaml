@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: homeassistant-proxy
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: homeassistant-proxy
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: homeassistant-proxy
+    spec:
+      containers:
+        - name: homeassistant-proxy
+          image: twodcube-home/homeassistant-proxy
+          ports:
+            - containerPort: 6969
+          imagePullPolicy: Always
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 300
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+          resources:
+            limits:
+              memory: 128Mi
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: homeassistant-proxy
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: homeassistant-proxy
+spec:
+  selector:
+    app: homeassistant-proxy
+  ports:
+    - name: homeassistant-proxy
+      protocol: TCP
+      port: 6969
+      targetPort: 6969
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: homeassistant-proxy
+  annotations:
+    cert-manager.io/issuer-kind: ClusterIssuer
+    cert-manager.io/issuer-name: letsencrypt-prod
+spec:
+  host: homeassistant.apps.okd4.home.zoltanszepesi.com
+  port:
+    targetPort: 6969
+  to:
+    kind: Service
+    name: homeassistant-proxy
