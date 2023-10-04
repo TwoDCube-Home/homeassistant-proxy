@@ -8,4 +8,4 @@ FROM registry.access.redhat.com/ubi9/go-toolset:1.19.10-14.1695131433 AS build-r
 WORKDIR /app
 COPY --from=build-stage /opt/app-root/src/homeassistant-proxy /opt/app-root/src/homeassistant-proxy
 EXPOSE 6969
-ENTRYPOINT ["/homeassistant-proxy"]
+ENTRYPOINT ["/opt/app-root/src/homeassistant-proxy"]

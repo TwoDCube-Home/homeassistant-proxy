@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: homeassistant-proxy
-          image: twodcube-home/homeassistant-proxy
+          image: ghcr.io/twodcube-home/homeassistant-proxy
           ports:
             - containerPort: 6969
           imagePullPolicy: Always
