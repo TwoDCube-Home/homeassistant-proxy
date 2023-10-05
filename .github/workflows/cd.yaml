@@ -15,19 +15,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Install CLI tools from OpenShift Mirror
-        uses: redhat-actions/openshift-tools-installer@v1
-        with:
-          oc: '4.13'
-
-      - name: Authenticate and set context
-        uses: redhat-actions/oc-login@v1
-        with:
-          openshift_server_url: ${{ secrets.OKD4_HOST }}
-          openshift_token: ${{ secrets.OKD4_TOKEN }}
-          certificate_authority_data: ${{ secrets.OKD4_CA }}
-          namespace: 'homeassistant'
-
       - name: Buildah Build
         id: build
         uses: redhat-actions/buildah-build@v2
@@ -46,6 +33,19 @@ jobs:
           registry: docker://ghcr.io/twodcube-home
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install CLI tools from OpenShift Mirror
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          oc: '4.13'
+
+      - name: Authenticate and set context
+        uses: redhat-actions/oc-login@v1
+        with:
+          openshift_server_url: ${{ secrets.OKD4_HOST }}
+          openshift_token: ${{ secrets.OKD4_TOKEN }}
+          certificate_authority_data: ${{ secrets.OKD4_CA }}
+          namespace: 'homeassistant'
 
       - name: Restart deployment
         shell: bash
