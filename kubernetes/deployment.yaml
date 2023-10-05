@@ -26,18 +26,21 @@ spec:
           livenessProbe:
             httpGet:
               path: /
-              port: 3000
+              port: 6969
             initialDelaySeconds: 300
             failureThreshold: 5
           readinessProbe:
             httpGet:
               path: /
-              port: 3000
+              port: 6969
             initialDelaySeconds: 10
             timeoutSeconds: 5
           resources:
             limits:
               memory: 128Mi
+          env:
+            - name: HOME_ASSISTANT_URL
+              value: "http://10.1.1.1:8123"
       topologySpreadConstraints:
         - maxSkew: 1
           topologyKey: kubernetes.io/hostname
