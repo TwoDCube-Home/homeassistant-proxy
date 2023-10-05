@@ -36,7 +36,7 @@ func main() {
 			zap.String("url", req.URL.String()),
 			zap.String("remote_addr", req.RemoteAddr),
 			zap.String("x_forwarded_for", req.Header.Get("X-Forwarded-For")),
-			zap.String("x_forwarded_proto", req.Header.Get("X-Forwarded-Proto")),
+			zap.Any("x_forwarded_proto", req.Header["X-Forwarded-Proto"]),
 		)
 		director(req)
 	}
