@@ -31,6 +31,7 @@ func main() {
 	proxy := httputil.NewSingleHostReverseProxy(url)
 	director := proxy.Director
 	proxy.Director = func(req *http.Request) {
+		req.Header.Set("X-Forwarded-Proto", "https")
 		logger.Info(
 			"Forwarding request",
 			zap.String("url", req.URL.String()),
